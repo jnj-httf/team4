@@ -16,6 +16,9 @@ export function* requestUbs({ resourceKey, options }) {
   yield put(initRequestResource(resourceKey));
   const params = {
     page: get(options, 'pagination.current'),
+    city: get(options, 'city', ''),
+    longitude: get(options, 'longitude', ''),
+    latitude: get(options, 'latitude', ''),
   };
 
   try {

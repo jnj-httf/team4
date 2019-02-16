@@ -10,7 +10,7 @@ const { Header } = Layout;
 
 export default class PageLayout extends React.PureComponent {
   static propTypes = {
-    children: PropTypes.element.isRequired,
+    children: PropTypes.any,
   };
 
   render() {

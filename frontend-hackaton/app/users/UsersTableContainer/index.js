@@ -4,6 +4,7 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { injectIntl, intlShape } from 'react-intl';
+import { Input, Button } from 'antd';
 
 import { PAGINATION_INITIAL_STATE } from 'configurations';
 import injectSaga from 'utils/injectSaga';
@@ -27,6 +28,9 @@ export class UsersTableContainer extends React.PureComponent {
 
   state = {
     pagination: PAGINATION_INITIAL_STATE,
+    city: '',
+    longitude: '',
+    latitude: '',
   };
 
   componentDidMount() {
@@ -54,23 +58,60 @@ export class UsersTableContainer extends React.PureComponent {
     );
   };
 
-  doRequestUbs() {
+  doRequestUbs = () => {
     const { requestUbs } = this.props;
-    const { pagination } = this.state;
-    requestUbs({ pagination });
-  }
+    const { city, longitude, latitude, pagination } = this.state;
+    requestUbs({ city, longitude, latitude, pagination });
+  };
 
   render() {
     const { data, intl } = this.props;
     const { pagination } = this.state;
 
     return (
-      <UsersTable
-        data={data}
-        onChange={this.onTableChange}
-        pagination={pagination}
-        intl={intl}
-      />
+      <div>
+        <div style={{ display: 'flex' }}>
+          <div style={{ maxWidth: 300, marginRight: 15 }}>
+            <label htmlFor="Cidade">Cidade</label>
+            <Input
+              id="Cidade"
+              onChange={event => this.setState({ city: event.target.value })}
+            />
+          </div>
+          <div style={{ maxWidth: 300, marginRight: 15 }}>
+            <label htmlFor="Longitude">Longitude</label>
+            <Input
+              id="Longitude"
+              onChange={event =>
+                this.setState({ longitude: event.target.value })
+              }
+            />
+          </div>
+          <div style={{ maxWidth: 300, marginRight: 15 }}>
+            <label htmlFor="Latitude">Latitude</label>
+            <Input
+              id="Latitude"
+              onChange={event =>
+                this.setState({ latitude: event.target.value })
+              }
+            />
+          </div>
+          <Button
+            style={{ marginTop: 21 }}
+            type="button"
+            onClick={this.doRequestUbs}
+          >
+            Buscar
+          </Button>
+        </div>
+        <br />
+        <UsersTable
+          data={data}
+          onChange={this.onTableChange}
+          pagination={pagination}
+          intl={intl}
+        />
+      </div>
     );
   }
 }
