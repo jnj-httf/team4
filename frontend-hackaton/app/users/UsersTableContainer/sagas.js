@@ -27,13 +27,19 @@ export function* requestUbs({ resourceKey, options }) {
       const { data } = yield call(apis.ubs.getUbs, { params });
       yield put(requestResourceSuccess(resourceKey, data));
     } else {
-      const { data } = yield call(apis.ubs.getUbs, { params });
-      yield put(requestResourceSuccess(resourceKey, data.records));
-      //const array = [];
-      // for (let i = 1; i < 1886; i += 1) {
-      //   const { data } = yield call(apis.ubs.getUbs, { params });
-      //   array.push
-      // }
+      const ubs = localStorage.getItem('UBS');
+      let array = JSON.parse(ubs);
+
+      if (!array) {
+        array = [];
+        for (let i = 1; i < 1886; i += 1) {
+          const { data } = yield call(apis.ubs.getUbs, { params: { page: i } });
+          array = array.concat(data.records);
+        }
+        localStorage.setItem('UBS', JSON.stringify(array));
+      }
+
+      yield put(requestResourceSuccess(resourceKey, array));
     }
   } catch (e) {
     yield put(requestResourceFailure(resourceKey, e.response));

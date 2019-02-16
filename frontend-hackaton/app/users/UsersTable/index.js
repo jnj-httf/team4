@@ -91,21 +91,21 @@ export default class UsersTable extends React.PureComponent {
 
   render() {
     const { onChange, pagination, data } = this.props;
-    let custompagination = {
-      ...pagination,
-      total: 1885,
-    };
+    // let custompagination = {
+    //   ...pagination,
+    //   total: 1885,
+    // };
 
-    if (HAS_BACKEND) {
-      custompagination = undefined;
-    }
+    // if (HAS_BACKEND) {
+    //   custompagination = undefined;
+    // }
     return (
       <Table
         columns={this.getColumns()}
         dataSource={data}
         onChange={onChange}
         rowKey="cod_cnes"
-        pagination={custompagination}
+        // pagination={custompagination}
       />
     );
   }

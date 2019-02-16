@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { injectIntl, intlShape } from 'react-intl';
 import { Input, Button } from 'antd';
-import { sortBy } from 'lodash';
+import { sortBy, filter } from 'lodash';
 
 import { PAGINATION_INITIAL_STATE, HAS_BACKEND } from 'configurations';
 import injectSaga from 'utils/injectSaga';
@@ -56,7 +56,7 @@ export class UsersTableContainer extends React.PureComponent {
       {
         pagination,
       },
-      this.doRequestUbs,
+      // this.doRequestUbs,
     );
   };
 
@@ -76,7 +76,7 @@ export class UsersTableContainer extends React.PureComponent {
       this.setState({
         error: '',
       });
-      this.doRequestUbs();
+      // this.doRequestUbs();
     }
   };
 
@@ -98,8 +98,7 @@ export class UsersTableContainer extends React.PureComponent {
     return dist;
   }
 
-  orderDataByDistance() {
-    const { data } = this.props;
+  orderDataByDistance(data) {
     const { latitude, longitude } = this.state;
 
     return sortBy(data, (elem) => this.distance(latitude, longitude, elem.vlr_latitude, elem.vlr_longitude))
@@ -111,14 +110,43 @@ export class UsersTableContainer extends React.PureComponent {
     // }
   }
 
+  retiraAcentos(str) {
+    const comAcento = 'ÀÁ ÃÄÅÆÇÈÉÊËÌÍÎÏÐ ÑÒÓÔÕÖØÙÚÛÜ ÝŔÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿŕ';
+    const semAcento = 'AAAAAAACEEEEIIIIDN OOOOOOUUUUYRsBaaa aaaaceeeeiiiionoooooouuuuybyr';
+    let novastr = '';
+    for (let i = 0; i < str.length; i += 1) {
+      let troca = false;
+      for (let a = 0; a < comAcento.length; a += 1) {
+        if (str.substr(i, 1) === comAcento.substr(a, 1)) {
+          novastr += semAcento.substr(a, 1);
+          troca = true;
+          break;
+        }
+      }
+      if (troca === false) {
+        novastr += str.substr(i, 1);
+      }
+    }
+    return novastr;
+  }
+
+  filterByCity(data) {
+    const { city } = this.state;
+    return filter(
+      data,
+      elem => city ? this.retiraAcentos(elem.dsc_cidade).toLowerCase().includes(this.retiraAcentos(city).toLowerCase()) : true
+    );
+  }
+
   render() {
     const { data, intl } = this.props;
     const { pagination } = this.state;
 
-    let orderedDataByDistance = data;
-    if (!HAS_BACKEND) {
-      orderedDataByDistance = this.orderDataByDistance();
-    }
+    let orderedDataByDistance = this.orderDataByDistance(data);
+    orderedDataByDistance = this.filterByCity(orderedDataByDistance);
+    // if (!HAS_BACKEND) {
+
+    // }
 
     return (
       <div>
@@ -132,13 +160,16 @@ export class UsersTableContainer extends React.PureComponent {
               onChange={event => this.setState({ city: event.target.value })}
             />
           </div>
-          <Button
+          <div style={{ marginTop: 25 }}>
+            <span>Total = {(orderedDataByDistance || []).length}</span>
+          </div>
+          {/* <Button
             style={{ marginTop: 21 }}
             type="button"
             onClick={this.validate}
           >
             Buscar
-          </Button>
+          </Button> */}
         </div>
         <br />
         <div style={{ display: 'flex' }}>
