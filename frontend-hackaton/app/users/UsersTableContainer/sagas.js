@@ -1,6 +1,7 @@
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 import get from 'lodash/get';
 
+import { HAS_BACKEND } from 'configurations';
 import apis from 'apis';
 import { REQUEST_RESOURCE } from 'reducers/RequestReducer/constants';
 import {
@@ -22,8 +23,18 @@ export function* requestUbs({ resourceKey, options }) {
   };
 
   try {
-    const { data } = yield call(apis.ubs.getUbs, { params });
-    yield put(requestResourceSuccess(resourceKey, data.records));
+    if (HAS_BACKEND) {
+      const { data } = yield call(apis.ubs.getUbs, { params });
+      yield put(requestResourceSuccess(resourceKey, data));
+    } else {
+      const { data } = yield call(apis.ubs.getUbs, { params });
+      yield put(requestResourceSuccess(resourceKey, data.records));
+      //const array = [];
+      // for (let i = 1; i < 1886; i += 1) {
+      //   const { data } = yield call(apis.ubs.getUbs, { params });
+      //   array.push
+      // }
+    }
   } catch (e) {
     yield put(requestResourceFailure(resourceKey, e.response));
   }

@@ -6,7 +6,7 @@ const proxy = require('http-proxy-middleware');
 require('dotenv').config();
 
 const logger = require('./logger');
-const ubs = require('./ubs');
+const mockApi = require('./mockApi');
 const argv = require('./argv');
 const port = require('./port');
 const setup = require('./middlewares/frontendMiddleware');
@@ -22,6 +22,10 @@ const app = express();
  /*app.use(proxy('/api',
    { target: 'https://api-ldc-hackathon.herokuapp.com/api' }
  ));*/
+
+// If you need a backend, e.g. an API, add your custom backend-specific middleware here
+app.use('/api', mockApi);
+
 // In production we need to pass these values in instead of relying on webpack
 setup(app, {
   outputPath: resolve(process.cwd(), 'build'),

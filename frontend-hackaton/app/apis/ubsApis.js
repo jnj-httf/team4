@@ -1,6 +1,15 @@
 import axios from 'axios';
+import { HAS_BACKEND } from 'configurations';
 
 export const getUbs = ({ params } = {}) => {
+  if (HAS_BACKEND) {
+    return axios('api/ubs', {
+      method: 'POST',
+      data: params,
+    });
+  }
+
+  // not using backend
   if (params.city) {
     return axios(`http://api-ldc-hackathon.herokuapp.com/api/ubs/city`, {
       method: 'POST',
@@ -15,10 +24,3 @@ export const getUbs = ({ params } = {}) => {
     },
   );
 };
-
-// our
-// export const getUbs = ({ params } = {}) =>
-//   axios.get('api/ubs', {
-//     method: 'POST',
-//     params,
-//   });

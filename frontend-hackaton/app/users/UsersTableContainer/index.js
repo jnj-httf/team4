@@ -5,8 +5,9 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { injectIntl, intlShape } from 'react-intl';
 import { Input, Button } from 'antd';
+import { sortBy } from 'lodash';
 
-import { PAGINATION_INITIAL_STATE } from 'configurations';
+import { PAGINATION_INITIAL_STATE, HAS_BACKEND } from 'configurations';
 import injectSaga from 'utils/injectSaga';
 import { requestResource } from 'reducers/RequestReducer/actions';
 import { selectResource } from 'reducers/RequestReducer/selectors';
@@ -31,6 +32,7 @@ export class UsersTableContainer extends React.PureComponent {
     city: '',
     longitude: '',
     latitude: '',
+    error: '',
   };
 
   componentDidMount() {
@@ -64,18 +66,89 @@ export class UsersTableContainer extends React.PureComponent {
     requestUbs({ city, longitude, latitude, pagination });
   };
 
+  validate = () => {
+    const { longitude, latitude } = this.state;
+    if ((latitude && !longitude) || (!latitude && longitude)) {
+      this.setState({
+        error: 'Por favor, preencha ambos longitude e latitude',
+      });
+    } else {
+      this.setState({
+        error: '',
+      });
+      this.doRequestUbs();
+    }
+  };
+
+  distance = (lat1, lon1, lat2, lon2) => {
+    const radlat1 = (Math.PI * lat1) / 180;
+    const radlat2 = (Math.PI * lat2) / 180;
+    const theta = lon1 - lon2;
+    const radtheta = (Math.PI * theta) / 180;
+    let dist =
+      Math.sin(radlat1) * Math.sin(radlat2) +
+      Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    if (dist > 1) {
+      dist = 1;
+    }
+    dist = Math.acos(dist);
+    dist = (dist * 180) / Math.PI;
+    dist = dist * 60 * 1.1515;
+    dist *= 1.609344; // to kilometers
+    return dist;
+  }
+
+  orderDataByDistance() {
+    const { data } = this.props;
+    const { latitude, longitude } = this.state;
+
+    return sortBy(data, (elem) => this.distance(latitude, longitude, elem.vlr_latitude, elem.vlr_longitude))
+    // for (let i = 0; i < data.length; i += 1) {
+    //   // if this location is within 0.1KM of the user, add it to the list
+    //   if (this.distance(poslat, poslng, data[i].lat, data[i].lng, "K") <= 0.1) {
+    //     html += '<p>' + data[i].location + ' - ' + data[i].code + '</p>';
+    //   }
+    // }
+  }
+
   render() {
     const { data, intl } = this.props;
     const { pagination } = this.state;
 
+    let orderedDataByDistance = data;
+    if (!HAS_BACKEND) {
+      orderedDataByDistance = this.orderDataByDistance();
+    }
+
     return (
       <div>
+        <span style={{ color: 'red' }}>{this.state.error}</span>
+        <br />
         <div style={{ display: 'flex' }}>
           <div style={{ maxWidth: 300, marginRight: 15 }}>
             <label htmlFor="Cidade">Cidade</label>
             <Input
               id="Cidade"
               onChange={event => this.setState({ city: event.target.value })}
+            />
+          </div>
+          <Button
+            style={{ marginTop: 21 }}
+            type="button"
+            onClick={this.validate}
+          >
+            Buscar
+          </Button>
+        </div>
+        <br />
+        <div style={{ display: 'flex' }}>
+          <div style={{ maxWidth: 300, marginRight: 15 }}>
+            <label htmlFor="Latitude">Latitude</label>
+            <Input
+              id="Latitude"
+              onChange={event =>
+                this.setState({ latitude: event.target.value })
+              }
             />
           </div>
           <div style={{ maxWidth: 300, marginRight: 15 }}>
@@ -87,26 +160,10 @@ export class UsersTableContainer extends React.PureComponent {
               }
             />
           </div>
-          <div style={{ maxWidth: 300, marginRight: 15 }}>
-            <label htmlFor="Latitude">Latitude</label>
-            <Input
-              id="Latitude"
-              onChange={event =>
-                this.setState({ latitude: event.target.value })
-              }
-            />
-          </div>
-          <Button
-            style={{ marginTop: 21 }}
-            type="button"
-            onClick={this.doRequestUbs}
-          >
-            Buscar
-          </Button>
         </div>
         <br />
         <UsersTable
-          data={data}
+          data={orderedDataByDistance}
           onChange={this.onTableChange}
           pagination={pagination}
           intl={intl}

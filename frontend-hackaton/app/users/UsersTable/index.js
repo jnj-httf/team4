@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'antd';
+import { HAS_BACKEND } from 'configurations';
 
 export default class UsersTable extends React.PureComponent {
   static propTypes = {
@@ -90,16 +91,21 @@ export default class UsersTable extends React.PureComponent {
 
   render() {
     const { onChange, pagination, data } = this.props;
+    let custompagination = {
+      ...pagination,
+      total: 1885,
+    };
+
+    if (HAS_BACKEND) {
+      custompagination = undefined;
+    }
     return (
       <Table
         columns={this.getColumns()}
         dataSource={data}
         onChange={onChange}
         rowKey="cod_cnes"
-        pagination={{
-          ...pagination,
-          total: 1885,
-        }}
+        pagination={custompagination}
       />
     );
   }

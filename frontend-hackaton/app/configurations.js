@@ -1,3 +1,5 @@
+export const HAS_BACKEND = false;
+
 export const PAGINATION_INITIAL_STATE = {
   current: 1,
   pageSize: 30,
